@@ -1,0 +1,52 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch: # Cho phép bấm nút chạy thủ công
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Lấy mã nguồn về
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 2. Cài đặt Java (Cần thiết để build Android)
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    # 3. Cài đặt Flutter (Flet chạy trên nền Flutter)
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.0' # Phiên bản ổn định
+        channel: 'stable'
+
+    # 4. Cài đặt Python
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11' # Flet hoạt động tốt với 3.11
+
+    # 5. Cài đặt thư viện Flet và các dependency
+    - name: Install Dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install flet
+
+    # 6. Build APK
+    # Lệnh này sẽ đóng gói code python và thư viện vào file APK
+    - name: Build APK
+      run: |
+        flet build apk --verbose
+
+    # 7. Upload file APK để bạn tải về
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-release
+        path: build/apk/app-release.apk # Đường dẫn mặc định sau khi build xong
